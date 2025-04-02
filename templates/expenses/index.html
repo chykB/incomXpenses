@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{%load static%}
+{% load static %}
 {% block title %}Expences{% endblock %}
 {% block content %}
 
@@ -35,7 +35,7 @@
       <table class="table table-stripped table-hover">
         <thead>
           <tr>
-            <th>Amount (CURRENCY)</th>
+            <th>Amount ({{currency}})</th>
             <th>Category</th>
             <th>Description</th>
             <th>Date</th>
@@ -61,7 +61,7 @@
       <table class="table table-stripped table-hover">
         <thead>
           <tr>
-            <th>Amount (CURRENCY)</th>
+            <th>Amount ({{currency}})</th>
             <th>Category</th>
             <th>Description</th>
             <th>Date</th>

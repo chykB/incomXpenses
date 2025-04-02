@@ -20,13 +20,20 @@
     <span class="navbar-toggler-icon"></span>
   </button>
   <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
-  <ul class="navbar-nav px-3">
+  <ul class="navbar-nav px-3" 
+    style="display: flex; flex-direction: row;align-items: center;"
+    >
     <li class="nav-item text-nowrap">
+      <span class="nav-link" href="">
+        {{request.user.username}}
+      </span>
+    </li>
+
+    <li class="nav-item text-nowrap mt-3 ml-3">
       <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}
         <input type="submit" value="Sign out" class="text text-capitalize"> 
       </form>
-      
     </li>
   </ul>
 </nav>

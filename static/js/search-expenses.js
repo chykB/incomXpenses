@@ -4,7 +4,7 @@ const appTable = document.querySelector(".app-table")
 const paginationContainer = document.querySelector(".pagination-container")
 const tableBody = document.querySelector(".table-body")
 
-tableOutput.computedStyleMap.display = "none"
+tableOutput.style.display = "none"
 
 
 searchField.addEventListener("keyup", (e)=>{
@@ -39,11 +39,9 @@ searchField.addEventListener("keyup", (e)=>{
             }
         })
     }else {
-        
-        
-
         appTable.style.display = "block"
-        appTable.style.display = "block"
-        tableOutput.style.display = "none"
+        paginationContainer.style.display = "block"
+        tableOutput.style.display = "none";
+        
     }
 })
