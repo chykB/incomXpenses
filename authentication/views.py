@@ -8,9 +8,9 @@ from django.contrib import messages
 from django.contrib import auth
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.tokens import default_token_generator, PasswordResetTokenGenerator
 from django.urls import reverse
-from .email_service import send_activation_email
+from .email_service import send_activation_email, send_password_reset_email
 
 
 # Create your views here.
@@ -140,3 +140,82 @@ class LogoutView(View):
         messages.success(request, "You have been logged out")
         return redirect("login")
             
+
+class RequestPasswordResetEmail(View):
+    def get(self, request):
+        return render(request, "authentication/reset_password.html")
+    
+    def post(self, request):
+        email = request.POST["email"]
+        # context ={
+        #     "values": request.POST
+        # }
+
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token_generator = PasswordResetTokenGenerator()
+            token = token_generator.make_token(user)
+            reset_path = reverse("reset_password_confirm", kwargs={"uidb64": uid, "token": token})
+            reset_url = request.build_absolute_uri(reset_path)
+            
+
+            #Send activation email
+            if send_password_reset_email(user.email, reset_url):
+                messages.success(request, "Check your email to reset your password")
+                return render(request, "authentication/reset_password.html")
+                    
+            else:
+                messages.error(request, "Failed to send reset password email")
+                return render(request, "authentication/reset_password.html")
+        messages.error(request, "Email not found, supply a valid email")
+        return render(request, "authentication/reset_password.html", )
+    
+class PasswordResetConfirmView(View):
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+            token_generator = PasswordResetTokenGenerator()
+            if token_generator.check_token(user, token):
+                return render(request, "authentication/set_newpassword.html", {"valid_token": True})
+            messages.error(request, "Password reset link is invalid, request a new one")
+            # return render(request, "authentication/set_newpassword.html", {"valid_token": False})
+            return redirect("request_password")
+        
+
+
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            messages.error(request, "Password reset link is invalid")
+            return render(request, "authentication/set_newpassword.html", {"valid_token": False})
+
+    def post(self, request, uidb64, token):
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match")
+            return render(request, "authentication/set_newpassword.html", {
+                "valid_token": True,
+                "uidb64": uidb64,
+                "token": token,
+            })
+
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+            token_generator = PasswordResetTokenGenerator()
+
+            if not token_generator.check_token(user, token):
+                messages.error(request, "Password reset link is invalid or expired")
+                # return render(request, "authentication/set_newpassword.html", {"valid_token": False})
+                return redirect("request_password")
+
+            user.set_password(password)
+            user.save()
+            messages.success(request, "Password reset successful. You can now log in.")
+            return redirect("login") 
+
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            messages.error(request, "Something went wrong. Please try again.")
+            return render(request, "authentication/set_newpassword.html", {"valid_token": False})

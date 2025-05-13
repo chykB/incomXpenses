@@ -21,3 +21,24 @@ def send_activation_email(to_email, activation_url, username):
     except Exception as e:
         print(e)
         return False
+    
+
+def send_password_reset_email(to_email, reset_url):
+    message = Mail(
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to_emails=to_email,
+        subject="Password Reset Request",
+        html_content=f'''
+            <h3>Password Reset Request</h3>
+            <p>Please click the link below to reset your password</p>
+            <p><a href="{reset_url}">Reset Password</a></p>
+            <p>This link expires in 24 hours</p>
+        '''
+    )
+    try:
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        response = sg.send(message)
+        return response.status_code == 202
+    except Exception as e:
+        print(e)
+        return False

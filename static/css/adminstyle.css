@@ -1,0 +1,21 @@
+#header {
+    
+    background: var(--header-bg);
+    color: #ffffff;
+}
+#user-tools {
+    color: #ffffff;
+}
+
+#changelist-filter {
+    display: none;
+}
+
+#recent-actions-module.module {
+    display: none;
+}
+
+#content.colMS {
+    width: 80%;
+    margin: auto;
+}
